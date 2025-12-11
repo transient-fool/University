@@ -1,0 +1,110 @@
+#pragma once
+#include <string>
+namespace pers {
+	struct person
+	{
+		std::string fname;
+		std::string lname;
+	};
+	void getperson(person&);
+	void showperson(const person&);
+}
+	namespace debts {
+		using namespace pers;
+		struct debt
+		{
+			person name;
+			double amount;
+		};
+		void getdebt(debt &);
+		void showdebt(const debt &);
+		double sumdebts(const debt[], int n);
+	}
+//以上是头文件
+
+//以下是第一个源文件
+#include <iostream>
+#include "namesp.h"
+namespace pers
+{
+	using std::cout;
+	using std::cin;
+	void getperson(person& rn)
+	{
+		cout << "enter first name:";
+		cin >> rn.fname;
+		cout << "enter last name:";
+		cin >> rn.lname;
+	}
+	void showperson(const person& rn)
+	{
+		cout << rn.fname << "." << rn.lname;
+	}
+}
+namespace debts
+{
+	void getdebt(debt& p) {
+		getperson(p.name);
+		std::cout << "enter debt";
+		std::cin >> p.amount;
+	}
+	void showdebt(const debt& p)
+	{
+		showperson(p.name);
+		std::cout << ":$" << p.amount << std::endl;
+	}
+	double sumdebts(const debt ar[], int n)
+	{
+		double total = 0;
+		for (int i = 0; i < n; i++)
+		{
+			total += ar[i].amount;
+		}
+		return total;
+	}
+}
+
+
+//以下是第二个源文件，在vs中也是编译这个文件
+#include <iostream>
+#include "namesp.h"
+void other(void);
+void another(void);
+int main()
+{
+	using debts::debt;
+	using debts::showdebt;  //如果有重载，会导入所有版本
+	debt goal = { {"Benny","Goalsniff"},120.0 };
+	showdebt(goal);
+	other();
+	another();
+	return 0;
+
+}
+
+void other()
+{
+	using std::cout;
+	using std::cin;
+	using namespace debts;   //导入整个空间，不太好的方法
+	person dg = { "dooles","glaster" };
+	showperson(dg);
+	cout << std::endl;
+	debt zippy[3];
+	int i;
+	for (i = 0; i < 3; i++)
+		getdebt(zippy[i]);
+	for (i = 0; i < 3; i++)
+	{
+		showdebt(zippy[i]);
+	}
+	cout << "total debts $" << sumdebts(zippy, 3) << std::endl;
+	return;
+}
+void another()
+{
+	using pers::person;
+	person collector = { "millo","rightshift" };
+	pers::showperson(collector);
+	std::cout << std::endl;
+}

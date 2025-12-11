@@ -1,0 +1,65 @@
+#include<iostream>
+#include<string>
+using namespace std;
+int main()
+{
+    /*
+    * 含有大量反斜杠的场景
+    */
+    string str = "D:\hello\world\test.text";
+    cout << str << endl;
+    string str1 = "D:\\hello\\world\\test.text";
+    cout << str1 << endl;
+    string str2 = R"(D:\hello\world\test.text)";
+    cout << str2 << endl;
+
+
+    /*
+    多行文本场景
+    */
+    const char* sql_query1 = R"(SELECT * FROM users
+WHERE id = 123
+AND status = 'active';
+)";
+    //空格会保留
+    const char* sql_query2 = R"(
+    SELECT * FROM users
+    WHERE id = 123
+    AND status = 'active';
+)";
+
+
+    cout << (sql_query1); //无需解引用
+    cout << (sql_query2) << endl; 
+
+    /*
+    * 嵌入特殊符号
+    */
+
+    string json = R"({
+    "name": "Alice",
+    "age": 30
+})";
+
+    string str4 = R"(<html>
+        <head>
+         你好
+        </head>
+        <body>
+        <p>
+        我是要成为QT的男人!!!
+        </p>
+        </body>
+        </html>)";
+    cout << str4 << endl;
+
+    cout << json << endl;
+
+    string str3 = R"luffy(D:\hello\world\test.text)luffy"; //（）两侧字符串要相同且会被忽略，不相同会报错
+    cout << str3 << endl;
+
+
+    return 0;
+}
+
+

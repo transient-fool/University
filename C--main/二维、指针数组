@@ -1,0 +1,86 @@
+#include<iostream>
+using namespace std;
+
+class A{
+private:
+    int data;
+public:
+	A(){}
+    A(int x):data(x){}
+    A(const A& a){this->data=a.data;}
+    void print(){cout<<data<<endl;}
+};
+
+int main()
+{
+/*	
+
+//先创建一个指针数组，在每个指针数组中存放指针 
+    int row,col;
+    cin>>row>>col;
+    //为行指针分配空间 
+    int **arr=new int *[row];    
+    for(int i=0;i<row;i++)
+         arr[i]= new int[col];//为每行分配空间（每行中有col个元素） 
+    //输入二维数组的数 
+    for(int i=0;i<row;i++)
+        for(int j=0;j<col;j++) 
+        cin>>arr[i][j];
+    cout<<"*******************"<<endl;
+     //输出二维数组中的数  
+    for(int i=0;i<row;i++)
+    {
+         for(int j=0;j<col;j++) 
+          cout<<*(*(arr+i)+j)<<" ";
+        cout<<endl;
+    } 
+    //释放二维数组（反过来） 
+    for(int i=0;i<row;i++)
+        delete[] arr[i]; 
+    delete[] arr;
+    return 0;
+*/
+ /*   
+    int (*p2)[3] = new int[2][3];
+    for(int i=0;i<2;i++)
+    {
+    	for(int j=0;j<3;j++)
+    	cin>>p2[i][j];
+	}
+      for(int i=0;i<2;i++)
+    {
+    	for(int j=0;j<3;j++)
+    	cout<<p2[i][j];
+	}
+   delete []p2;
+//   cout<<*(*(p2+1)+2);
+    
+
+*/
+
+
+
+
+    int *x = new int[10]{1,2,3,4,5,6,7,8,9,10};
+    A * ap = new A[10]{1,2,3,4,5,6,7,8,9,10}; //devc++编译器不兼容C++11标准但可以运行
+    A** ab=new A*[3];
+    for(int i=0;i<3;i++)
+    ab[i]=new A(i);
+    for(int i=0;i<3;i++)
+	ab[i]->print();
+	for(int i=0;i<3;i++)
+	delete []ab[i];
+	delete []ab; 
+	//和普通类型一致 
+ /*   for(int i=0;i<10;++i) {
+        (ap+i)->print();
+
+        cout<<"!"<<x[i]<<endl;
+    }
+    delete []x;
+    delete []ap;
+    */
+    return 0;
+}    
+    
+    

@@ -1,0 +1,216 @@
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include<utility>
+#include <algorithm>
+using namespace std;
+class Component
+{
+public:
+	double virtual  compute(int x) { return 0.0; };//无定义函数要设置为空函数体 
+	void virtual display() {};
+	virtual ~Component() {};
+};
+class LeaveTerm :public Component
+{
+	double coef;
+	int power;
+public:
+   
+	LeaveTerm(double c, int n = 0);
+	~LeaveTerm() {};
+	double compute(double x);
+	void display();
+	void setCoef(double m)
+	{
+		coef = m;
+	}
+	void setPower(int n)
+	{
+		power = n;
+	}
+	double getCoef()
+	{
+		return coef;
+	}
+	int getPower()
+	{
+		return power;
+	}
+};
+class Polynomial :public Component
+{
+	vector<pair<double,int> >array;
+	int size;//可以判断队列中的个数 
+public:
+	Polynomial(){
+		size=0;
+	}
+	
+	
+	~Polynomial()
+	{	
+	/*	for(int i=0;i<counter;i++){
+			delete []array[i];
+		}
+		delete []array;
+		*/
+	cout << "Polynomial destructor" << endl;
+	}
+	double compute(double x);
+	void display();
+    Polynomial& Concatenate(LeaveTerm &p);
+    Polynomial& Concatenate(Polynomial &l);//函数重载 
+	Polynomial& Reduce();
+	
+		
+	
+};
+	
+//函数实现 
+LeaveTerm::LeaveTerm(double c, int n) //初始化，默认函数不需要再写参数 
+{
+	coef = c;
+	power = n;
+}
+double LeaveTerm::compute(double x)
+{
+	return coef * pow(x, (double)power);
+}
+void LeaveTerm::display()
+{
+	if (power)  //幂次是0不输入x 
+		cout << coef << "x^" << power << endl;
+	else cout << coef << endl;
+}
+double Polynomial::compute(double x)
+{
+	double sum=0;
+	int n=array.size();
+	for(int i=0;i<n;i++)
+	{
+		double a=array[i].first;
+		int b=array[i].second;
+	
+	sum+=(a*pow(x,(double)b));	
+	}
+	return sum;
+}
+Polynomial& Polynomial::Concatenate(LeaveTerm &p)
+{
+	double a=p.getCoef(); //可以申明为友元类，但这个样可以保护数据 
+	int b=p.getPower();
+	pair<double,int>tt(a,b); 
+	array.push_back(tt);//只要获取前缀和和幂次就可以了，这样还不会破坏原来的数据 
+	Reduce();
+}
+Polynomial& Polynomial::Concatenate(Polynomial &l)//获得了另一个容器 
+{
+	while(!(l.array.empty()))//如果另一个容器里元素不为空，就合并 
+	{
+		array.push_back(l.array.back());//从尾部弹出元素 
+		l.array.pop_back();  //删除尾部的元素 
+	}
+	Reduce();
+}
+Polynomial& Polynomial::Reduce()
+{
+	
+	vector<pair<double,int> >::iterator it;
+	for(it=array.begin();it!=array.end();it++)
+	{
+		int sum=(*it).first;
+		int trans=(*it).second; //z暂存幂次 
+		for(vector<pair<double,int> >::iterator tt=it+1;tt!=array.end();tt++) //双指针向后找相同幂次的元素 
+		{
+			int k=(*tt).second;
+			if(trans==k)
+			{
+				sum+=(*tt).first;
+				(*tt).first=0.0;
+				(*tt).second=0; 
+			}
+		}
+		//cout<<"\n"<<sum<<endl;
+		(*it).first=sum;
+		
+	}
+	
+	//经过上面的循环后，容器内只有幂次不相同的值
+	//进行排序
+	int start=array.size()-1;
+	pair<double,int>t;
+for (int i = 0; i < start - 1; i++) {
+		for (int j = 0; j < start - i - 1; j++)
+		{
+			if (array[j].second > array[j+1].second)
+			{
+				t = array[j + 1];
+				array[j + 1] = array[j];
+				array[j] = t;
+			}
+		}
+	}
+}
+void Polynomial::display()
+{
+for(vector<pair<double,int> >::iterator it=array.begin();it!=array.end();it++)
+{
+	if((*it).first==0)
+	continue;
+	if(it!=array.begin()&&(*it).first>0)
+	cout<<"+"; //输出正负号 
+	if((*it).second)
+	cout<<(*it).first<<"x^"<<(*it).second;
+	else cout<<(*it).first;	
+	
+	
+} 
+cout<<endl;
+}
+
+
+int main()
+{
+LeaveTerm t1(3, 0), t2(-2, 2), t3(3, 3), t4(2, 2);
+	Polynomial* p = new Polynomial();
+	cout << p->compute(3) << endl;
+	p->Concatenate(t1);
+	cout << p->compute(3)<<endl;
+
+	p->Concatenate(t2);
+	cout << p->compute(3) << endl;
+	p->display();
+	p->Concatenate(t3);
+	cout<<p->compute(3)<<endl;
+	p->display();
+	p->Concatenate(t4);
+	cout<<p->compute(3)<<endl;
+	p->display();
+	Component* pComp=&t1;
+	pComp->display();
+	pComp=p;
+	pComp->display();
+	delete pComp;
+	cout<<endl;
+//测试LeaveTerm对象的函数		
+	LeaveTerm t6(3, 0), t7(-2, 2);
+	t6.display();
+	t7.display();
+	cout<<t7.compute(3)<<endl;
+//测试重载函数的案例	
+
+	
+LeaveTerm  t8(3, 3), t9(2, 2);
+	Polynomial* l = new Polynomial();
+		Polynomial* q= new Polynomial();
+l->Concatenate(t6);
+l->Concatenate(t7);
+q->Concatenate(t8);
+q->Concatenate(t9);
+l->Concatenate(*q);
+l->display();	
+return 0;
+
+}
+

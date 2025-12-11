@@ -1,0 +1,79 @@
+#include<iostream>
+using namespace std;
+int main()
+{
+	int a = 0, b = 200;
+	// [capture-list] (parameters) mutable -> return-type { statement }
+	// 捕捉列表  参数  返回值  函数体
+
+	// 一般是局部匿名函数  也可以写到全局
+	auto Add1 = [](int x, int y)->double {return (x + y) / 3.0; };
+	auto Add2 = [](int x, int y)->int {return (x + y) / 3.0; };//传参写法
+	auto Add3 = [a, b] {return (a + b) / 3.0; };//捕捉变量写法
+
+	cout << Add1(a, b) << endl;
+	cout << Add2(a, b) << endl;
+	cout << Add3() << endl;
+	//（2）[]捕捉列表 例子2：交换函数
+		//3, 4, 5, 6是几种捕捉方式
+
+			auto Swap1 = [](int& x, int& y) {
+		int tmp = x;
+		x = y;
+		y = tmp;
+	};
+
+	Swap1(a, b);
+	cout << a << " " << b << endl;
+
+	//2.	mutable 只是让传值捕捉变量const属性去掉了，但是捕捉的a，b仍是拷贝，外部的a，b无法被修改
+		/*auto Swap2 = [a, b]()mutable{
+			int tmp = a;
+			a = b;
+			b = tmp;
+		};*/
+
+//	用引用的方式捕捉:
+	auto Swap2 = [&a, &b] {
+		int tmp = a;
+		a = b;
+		b = tmp;
+	};
+
+	Swap2();
+	cout << a << " " << b << endl;
+
+		int c = 2, d = 3, e = 4, f = 5, g = 6, ret;
+	//传值捕捉全部对象
+		auto Func1 = [=] {
+		return c + d * e / f + g;
+	};
+
+	cout << Func1() << endl;
+
+	//4.	传引用捕捉全部对象
+		auto Func2 = [&] {
+		ret = c + d * e / f + g;
+	};
+
+	Func2();
+	cout << ret << endl;
+
+//	5.	混着捕捉
+		auto Func3 = [c, d, &ret] {
+		ret = c + d;
+	};
+
+	Func3();
+	cout << ret << endl;
+
+	//6.	ret传引用捕捉 其他全部传值捕捉
+		auto Func4 = [=, &ret] {
+		ret = c + d * e / f + g;
+		//c = 1;
+	};
+
+	Func4();
+	cout << ret << endl;
+
+}

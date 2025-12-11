@@ -1,0 +1,89 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+// 全局变量，用于演示引用初始化
+int global_num = 100;
+
+class Example {
+public:
+    // 1. 普通非静态成员变量（C++11起支持）
+    int x = 10;           // 使用 = 初始化
+    double y{ 3.14 };       // 使用 {} 初始化
+    std::string name = "Default";
+
+    // 2. const 非静态成员（C++11起支持）
+    const int MAX_VALUE = 100;
+    const std::string GREETING{ "Hello" };
+
+    // 3. 引用成员（可以类内初始化但不推荐，通常应在构造函数初始化）
+    int& ref = global_num;
+
+    // 4. 自定义类型初始化
+    std::vector<int> numbers{ 1, 2, 3, 4, 5 };
+
+    // 5. static const 整型/枚举（C++98就支持）
+    static const int DEFAULT_SIZE = 50;
+    enum class Color { RED, GREEN, BLUE };
+    static const Color DEFAULT_COLOR = Color::GREEN;
+
+    // 6. static constexpr（C++11起支持）
+    static constexpr float PI = 3.14159f;
+    static constexpr const char* const AUTHOR = "ChatGPT";
+
+    // 7. inline static（C++17起支持）
+ //   inline static int instance_count = 0;
+
+    // 8. 数组成员
+    int arr[3]{ 10, 20, 30 };
+
+    // 构造函数（会覆盖类内初始化）
+    Example(int val) : x(val), ref(global_num) {
+       // instance_count++;
+        global_num++;
+    }
+
+    // 默认构造函数
+    Example() {
+       // instance_count++;
+        global_num++;
+    }
+
+    void print() const {
+        std::cout << "x: " << x << ", y: " << y
+            << ", name: " << name
+            << ", MAX_VALUE: " << MAX_VALUE
+            << ", ref: " << ref
+            << ", numbers: ";
+        for (auto n : numbers) std::cout << n << " ";
+        std::cout << "\narr: ";
+        for (auto n : arr) std::cout << n << " ";
+        std::cout << "\n";
+    }
+
+    static void print_static_info() {
+        std::cout << "Static info:\n"
+            << "DEFAULT_SIZE: " << DEFAULT_SIZE
+            << ", PI: " << PI
+            << ", AUTHOR: " << AUTHOR
+            << ", instance_count: " << global_num
+            << "\n";
+    }
+};
+
+// 必须在类外定义非inline静态成员（C++17前）
+const int Example::DEFAULT_SIZE;  // 定义（初始化已在类内完成）
+constexpr float Example::PI;      // 定义（C++17起可省略）
+constexpr const char* const Example::AUTHOR;
+
+int main() {
+    Example e1;  // 使用默认初始化
+    e1.print();
+    Example::print_static_info();
+
+    Example e2(42);  // 使用构造函数初始化（会覆盖类内初始化的x）
+    e2.print();
+    Example::print_static_info();
+
+    return 0;
+}

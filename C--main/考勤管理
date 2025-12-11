@@ -1,0 +1,519 @@
+#include <iostream>
+#include<fstream>
+#include<vector>
+#include<string>
+#include<algorithm>
+#include<iomanip>
+#include <map>
+using namespace std;
+class Stu_absence
+{
+	string time;
+	string class_name;//缺课名称
+	string sum_ab;//缺课节数
+	string stu_name;//学生姓名
+	string type_ab;//缺课性质
+public:
+	void setTime(string m_time)
+	{
+		time = m_time;
+	}
+
+	void setclass_name(string m_class_name)
+	{
+		class_name = m_class_name;
+	}
+	void setstu_name(string m_stu_name) {
+		stu_name = m_stu_name;
+	}
+	void settype_ab(string m_type_ab) {
+		type_ab = m_type_ab;
+	}
+	void setsum_ab(string m_sum_ab)
+	{
+		sum_ab = m_sum_ab;
+	}
+	string getname() { return stu_name; };
+	string gettime() { return time; };
+	string getsum_ab() { return sum_ab; }
+	string getclassname() { return class_name; };
+	string gettype_ab() { return type_ab; };
+	friend ostream& operator<<(ostream& os, Stu_absence& p)
+	{
+		os << left << setw(16) << p.time << left << setw(22) << p.class_name << left << setw(15) << p.stu_name << left << setw(10) << p.sum_ab << " " << p.type_ab << endl;
+		return os;
+	}
+};
+class student_class
+{
+//	string class_name;
+	
+  
+public:
+	vector<string>class_nm;
+	vector<string>stu_name;
+	void Inputstu_class();//导入学生和课程姓名
+	void Inputclass_name();
+	
+};
+class AttendenceSystem {
+
+	vector<Stu_absence>ll;
+	friend class student_class;
+	
+public:
+	void Inputfile();//导入文件
+	void showmenu();//显示菜单
+	void adddate();//添加数据
+	void modify();//修改数据
+	void showall();//显示所有数据
+	void showstudent();//展示某个薛学生所有的数据
+	void accmulation();//统计缺课人数
+	void accumulation2();//统计缺课课程和数量
+	void showstu();//展示学生姓名
+	void show_class();//显示课程
+	void run();//完成流程控制
+	void savefile();//保存文件
+};
+void AttendenceSystem::showstu()
+{
+	student_class p;
+	p.Inputstu_class();
+	for (auto i = p.stu_name.begin(); i != p.stu_name.end(); i++)
+		cout << *i << endl;
+}
+void AttendenceSystem::show_class()
+{
+	student_class p;
+	p.Inputclass_name();
+	for (auto i = p.class_nm.begin(); i != p.class_nm.end(); i++)
+		cout << *i << endl;
+}
+void student_class::Inputstu_class()
+{
+	ifstream file;
+	char ch;
+	string str, str1;
+	file.open("C:/c.put/学生姓名.txt");
+	int j = 0;
+	while (!file.eof())
+	{
+		file.get(ch);
+		if (ch != '\n' && ch != ':' && ch != ' ')
+		{
+			str = "a";
+			str[0] = ch;
+			str1 = str1 + str;
+		}
+		if (ch == ':' || ch == '\n' || ch == ' ')
+		{ 
+			
+			stu_name.push_back(str1);
+			//cout << str1 << endl;
+			str1.clear();
+		}
+
+	}
+//	for (auto i = stu_name.begin(); i != stu_name.end(); i++)
+//		cout << *i << endl;
+//	cout << "文件导入成功" << endl;
+}
+void student_class::Inputclass_name()
+{
+	ifstream file;
+	char ch;
+	string str, str1;
+	file.open("C:/c.put/课程名称.txt");
+	int j = 0;
+	while (!file.eof())
+	{
+		file.get(ch);
+		if (ch != '\n' && ch != ':' && ch != ' ')
+		{
+			str = "a";
+			str[0] = ch;
+			str1 = str1 + str;
+		}
+		if (ch == ':' || ch == '\n' || ch == ' ')
+		{
+
+			class_nm.push_back(str1);
+			//cout << str1 << endl;
+			str1.clear();
+		}
+
+	}
+}
+void AttendenceSystem::run()
+{
+	char input;
+	
+	do {
+        showmenu();
+		cout << "输入你想要选择的功能" << endl;
+		cin >> input;
+		if (input == '1')
+			adddate();
+		if (input == '2')
+			modify();
+		if (input == '3')
+			showstudent();
+		if (input == '4')
+		{
+			char t;
+			cout << "您是想统计那个数据？" << endl;
+			cout << "1.时间段内旷课学生和节数" << endl;
+			cout << "2.时间段内旷课课程和节数" << endl;
+			cin >> t;
+			if (t == '1')
+				accmulation();
+			else	if (t == '2')
+				accumulation2();
+			else cout << "无这个功能" << endl;
+		}
+		if (input == '5')
+		{
+			savefile();
+			cout << "再见！" << endl;
+			break;
+		}
+		if (input == '6')
+			showall();
+		if (input == '7')
+		{
+			showstu();
+		}
+		if (input == '8')
+		{
+			show_class();
+		}
+
+	} while (input);
+}
+bool cmp2(pair<string, int>x, pair<string, int>y) {
+	if (x.second != y.second)
+		return x.second > y.second;
+	return x.first < y.first;
+}
+bool cmp(Stu_absence a, Stu_absence b)
+{
+
+	if (a.gettime() != b.gettime())
+		return a.gettime() < b.gettime();
+	return a.getsum_ab() < b.getsum_ab();
+}
+void AttendenceSystem::savefile()
+{
+	ofstream file;
+	file.open("C:/c.put/attendance record.txt");
+	for (int i = 0; i < ll.size(); i++)
+		file << ll[i].gettime() << " " << ll[i].getclassname()
+		<< " " << ll[i].getname() << " " << ll[i].getsum_ab() << " "
+		<< ll[i].gettype_ab() << endl;
+}
+//导入文件
+void AttendenceSystem::Inputfile()
+{
+	ifstream file;
+	file.open("C:/c.put/attendance record.txt");
+	if (!file.is_open())
+		cout << "文件打开失败" << endl;
+	string s, temp;//
+	int j = 0;
+	Stu_absence stu;
+	while (getline(file, s))
+	{
+		s += '\n';
+		for (int i = 0; i < s.size(); i++)
+		{
+			if (s[i] == ' ' || s[i] == '\n')
+			{
+
+				j++;
+				if (j == 1) stu.setTime(temp);
+				if (j == 2) stu.setclass_name(temp);
+				if (j == 3) stu.setstu_name(temp);
+				if (j == 4)stu.setsum_ab(temp);
+				if (j == 5) stu.settype_ab(temp);
+				temp = "";
+
+			}
+			else temp += s[i];
+		}
+		j = 0;
+		ll.push_back(stu);
+		//cout << stu;//测试代码	
+	}
+	file.close();
+}
+void AttendenceSystem::showmenu() {
+	cout << "---------------------------------------------" << endl;
+	cout << "1.录入缺课记录            2.修改缺课记录 " << endl;
+	cout << "3.查询缺课记录            4.统计缺课记录" << endl;
+	cout << "5.退出系统                6.显示所有数据" << endl;
+	cout << "7.显示学生                8.显示课程    " << endl;
+	cout << "----------------------------------------------" << endl;
+}
+void AttendenceSystem::adddate()
+{
+	Stu_absence stu;
+	cout << "请输入缺课记录数" << endl;
+	int t;
+	cin >> t;
+	for (int i = 0; i < t; i++)
+	{
+		cout << "请输入学生缺课记录：" << endl;
+		string t;
+		cout << "请输入缺课学生姓名！" << endl;
+		cin >> t;
+		student_class p;
+		p.Inputstu_class();
+		p.Inputclass_name();
+		int flag = 0;
+		for (auto i = p.stu_name.begin(); i != p.stu_name.end(); i++)
+		{ 
+			//cout << t << endl;
+			//cout << (*i);
+			if (*i == t)
+				flag = 1;
+		}
+		if (flag == 0)
+		{
+			cout << "无此学生" << endl;
+			break;
+		}
+		else stu.setstu_name(t);
+		cout << "请输入缺课日期(yyyy-mm-dd格式)：" << endl;
+		cin >> t;
+		stu.setTime(t);
+		cout << "请输入缺课名称：" << endl;
+		cin >> t;
+		int m = 0;
+		for (auto i = p.class_nm.begin(); i != p.class_nm.end(); i++)
+		{
+			if ((*i) == t)
+				m = 1;
+		}
+		if (m == 0) {
+			cout << "无此课程" << endl;
+			break;
+		}
+		else stu.setclass_name(t);
+		cout << "请输入缺课节数，多节用~分割：" << endl;
+		cin >> t;
+		stu.setsum_ab(t);
+		
+		
+		cout << "请输入缺课性质：" << endl;
+		cin >> t;
+		stu.settype_ab(t);
+		ll.push_back(stu);
+	}
+
+	cout << "所有数据已经保存" << endl;
+
+
+}
+void AttendenceSystem::modify()
+{
+	char t = '0';
+	do {
+		cout << "选择你想要修改的学生姓名：" << endl;
+		string s;
+		cin >> s;
+		int i;
+		int j = 0;
+		for (i = 0; i < ll.size(); i++)
+		{
+			if (ll[i].getname() == s) {
+				cout << "编号" << " " << i << "  " << "   " << ll[i] << endl;
+				j++;
+			}
+		}
+		int mm;
+		if (!j) {
+			cout << "没有这个学生!" << endl;
+			break;
+		}
+		else {
+			cout << "选择你想要修改的编号" << endl;
+
+			cin >> mm;
+		}
+
+
+		cout << "选择你想修改的内容：" << endl;
+		cout << "1.日期   2.旷课名称  3.旷课节数 4.旷课性质 5.删除这条记录 6.姓名" << endl;
+		cin >> t;
+		if (t == '1')
+		{
+			cout << "请输入缺课日期(yyyy-mm-dd)" << endl;
+			cin >> s;
+			ll[mm].setTime(s);
+		}
+		if (t == '2') {
+			cout << "请输入旷课名称" << endl;
+			cin >> s;
+			ll[mm].setclass_name(s);
+		}
+		if (t == '3') {
+			cout << "输入旷课节数" << endl;
+			cin >> s;
+			ll[mm].setsum_ab(s);
+		}
+		if (t == '4')
+		{
+			cout << "请输入旷课类型" << endl;
+			cin >> s;
+			ll[mm].settype_ab(s);
+		}
+		if (t == '5')
+		{
+			int i = 0;
+			
+			for (auto it = ll.begin(); it != ll.end();)
+			{
+				i++;
+				if (mm == i)
+					it=ll.erase(it);
+				else it++;
+				cout << "已经删除此考勤记录" << endl;
+
+			}
+		}
+		if (t == '6')
+		{
+			cout << "请输入姓名" << endl;
+			cin >> s;
+			ll[mm].setstu_name(s);
+		}
+		cout << "是否要继续修改？" << endl;
+		cout << "0.否  1.是" << endl;
+		cin >> t;
+		if (t == '0') cout << "您的修改已经全部完成！" << endl;
+
+	} while (t != '0');
+
+}
+void AttendenceSystem::showall()
+{
+	cout << "以下为所有缺课记录" << endl;
+	int j = 0;
+	cout << "编号 日期           课程名称            学生名称        节数       缺课性质" << endl;
+	for (auto i = ll.begin(); i != ll.end(); i++)
+		cout << setw(2) << j++ << "  " << *i;
+}
+//显示一个学生的旷课记录，按要求输出
+
+void AttendenceSystem::showstudent()
+{
+	cout << "输入你想要搜索的缺课的学生姓名：" << endl;
+	string s;
+	vector<Stu_absence>p;
+	cin >> s;
+	for (int i = 0; i < ll.size(); i++)
+	{
+		if (ll[i].getname() == s)
+			p.push_back(ll[i]);//放到新的容器中
+	}
+	if (p.empty()) {
+		cout << "没有这个学生" << endl;
+	}
+	else {
+		cout << "以下是此学生的旷课记录：" << endl;
+		sort(p.begin(), p.end(), cmp);
+		for (int i = 0; i < p.size(); i++)
+		{
+			cout << p[i];
+		}
+	}
+
+
+}
+//统计某段时间内的旷课节数和旷课姓名
+
+void AttendenceSystem::accmulation()
+{
+	cout << "请输入你想要统计的天数范围)：" << endl;
+	string s1, s2;
+	cout << "起始天数(yyyy-mm-dd)：";
+	cin >> s1;
+	cout << "终止天数(yyyy-mm-dd)：";
+	cin >> s2;
+	vector<Stu_absence>p;
+	for (int i = 0; i < ll.size(); i++)
+	{
+		if (ll[i].gettime() >= s1 && ll[i].gettime() <= s2)
+			p.push_back(ll[i]);
+	}
+	map<string, int>m;
+	int sum = 0;
+	for (int i = 0; i < p.size(); i++)
+	{
+		if (p[i].getsum_ab().size() > 2)
+		{
+			sum = (p[i].getsum_ab()[2] - '0') - (p[i].getsum_ab()[0] - '0') + 1;
+			m[p[i].getname()] += sum;
+		}
+		else  m[p[i].getname()] ++;
+
+	}
+	cout << "以下是所有的旷课学生和旷课记录:" << endl;
+	vector<pair<string, int> >q;
+	for (auto i = m.begin(); i != m.end(); i++)
+	{
+		q.push_back(make_pair(i->first, i->second));
+	}
+	sort(q.begin(), q.end(), cmp2);
+	for (auto i = q.begin(); i != q.end(); i++)
+	{
+		cout << "学生" << "  " << (*i).first << "  " << "旷课节数" << "  " << (*i).second << endl;
+	}
+
+}
+//统计某段时间内课程和旷课人次
+void AttendenceSystem::accumulation2()
+{
+	cout << "请输入你想要统计的天数范围)：" << endl;
+	string s1, s2;
+	cout << "起始天数(yyyy-mm-dd)：";
+	cin >> s1;
+	cout << "终止天数(yyyy-mm-dd)：";
+	cin >> s2;
+	vector<Stu_absence>p;
+	for (int i = 0; i < ll.size(); i++)
+	{
+		if (ll[i].gettime() >= s1 && ll[i].gettime() <= s2)
+			p.push_back(ll[i]);
+	}
+	map<string, int>m;
+	int sum = 0;
+	for (int i = 0; i < p.size(); i++)
+	{
+		if (p[i].getsum_ab().size() > 2)
+		{
+			sum = (p[i].getsum_ab()[2] - '0') - (p[i].getsum_ab()[0] - '0') + 1;
+			m[p[i].getclassname()] += sum;
+		}
+		else  m[p[i].getclassname()] ++;
+
+	}
+	cout << "以下是所有的旷课课程和旷课记录:" << endl;
+	vector<pair<string, int> >q;
+	for (auto i = m.begin(); i != m.end(); i++)
+	{
+		q.push_back(make_pair(i->first, i->second));
+	}
+	sort(q.begin(), q.end(), cmp2);
+	for (auto i = q.begin(); i != q.end(); i++)
+	{
+		cout << "课程" << "  " << (*i).first << "  " << "旷课次数" << "  " << (*i).second << endl;
+	}
+}
+
+int main()
+{
+	AttendenceSystem system;
+	system.Inputfile();
+	system.run();
+}
