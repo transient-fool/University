@@ -1,0 +1,198 @@
+#include <iostream>
+#include <vector>
+#include <algorithm> // for std::lower_bound
+using namespace std;
+
+class BTreeNode {
+public:
+    int t;  // 最小度数
+    vector<int> keys;
+    vector<BTreeNode*> children;
+    bool leaf;
+
+    BTreeNode(int _t, bool _leaf) : t(_t), leaf(_leaf) {}
+
+    void print() {
+        cout << "[";
+        for (size_t i = 0; i < keys.size(); ++i) {
+            cout << keys[i];
+            if (i != keys.size() - 1) cout << ", ";
+        }
+        cout << "]";
+        cout << (leaf ? " (Leaf)" : " (Internal)");
+    }
+
+    ~BTreeNode() {
+        for (auto child : children) {
+            delete child;
+        }
+    }
+};
+
+class BTree {
+private:
+    BTreeNode* root;
+    int t;
+
+    // 安全获取子节点（防止越界）
+    BTreeNode* getChildSafe(BTreeNode* node, size_t index) {
+        return (index < node->children.size()) ? node->children[index] : nullptr;
+    }
+
+    pair<BTreeNode*, int> searchHelper(BTreeNode* node, int k) {
+        auto it = lower_bound(node->keys.begin(), node->keys.end(), k);
+        int i = it - node->keys.begin();
+
+        if (i < node->keys.size() && node->keys[i] == k) {
+            return { node, i };
+        }
+        else if (node->leaf) {
+            return { nullptr, -1 };
+        }
+        else {
+            return searchHelper(getChildSafe(node, i), k);
+        }
+    }
+
+    void splitChild(BTreeNode* parent, int idx) {
+        BTreeNode* child = parent->children[idx];
+        BTreeNode* newChild = new BTreeNode(t, child->leaf);
+
+        // 移动后半部分键到新节点
+        size_t splitPos = child->keys.size() / 2;
+        int medianKey = child->keys[splitPos];
+
+        newChild->keys.assign(child->keys.begin() + splitPos + 1, child->keys.end());
+        child->keys.erase(child->keys.begin() + splitPos, child->keys.end());
+
+        if (!child->leaf) {
+            newChild->children.assign(child->children.begin() + splitPos + 1, child->children.end());
+            child->children.erase(child->children.begin() + splitPos + 1, child->children.end());
+        }
+
+        // 将中间键提升到父节点
+        parent->keys.insert(parent->keys.begin() + idx, medianKey);
+        parent->children.insert(parent->children.begin() + idx + 1, newChild);
+    }
+
+    void insertNonFull(BTreeNode* node, int k) {
+        if (node->leaf) {
+            // 叶子节点直接插入
+            auto it = upper_bound(node->keys.begin(), node->keys.end(), k);
+            node->keys.insert(it, k);
+        }
+        else {
+            // 找到合适的子节点
+            auto it = upper_bound(node->keys.begin(), node->keys.end(), k);
+            int idx = it - node->keys.begin();
+
+            // 检查子节点是否存在
+            if (idx >= node->children.size()) {
+                cerr << "Error: Child index out of range!" << endl;
+                return;
+            }
+
+            BTreeNode* child = node->children[idx];
+
+            // 如果子节点已满，先分裂
+            if (child->keys.size() == 2 * t - 1) {
+                splitChild(node, idx);
+                if (k > node->keys[idx]) {
+                    idx++;
+                    child = getChildSafe(node, idx);
+                    if (!child) {
+                        cerr << "Error: Invalid child after split!" << endl;
+                        return;
+                    }
+                }
+            }
+            insertNonFull(child, k);
+        }
+    }
+
+    void printTreeHelper(BTreeNode* node, int level) {
+        cout << "Level " << level << ": ";
+        node->print();
+        cout << endl;
+
+        if (!node->leaf) {
+            for (auto child : node->children) {
+                if (child) printTreeHelper(child, level + 1);
+            }
+        }
+    }
+
+public:
+    BTree(int _t) : t(max(2, _t)), root(nullptr) {}  // 确保t至少为2
+
+    pair<BTreeNode*, int> search(int k) {
+        return root ? searchHelper(root, k) : make_pair(nullptr, -1);
+    }
+
+    void insert(int k) {
+        if (!root) {
+            root = new BTreeNode(t, true);
+            root->keys.push_back(k);
+            return;
+        }
+
+        if (root->keys.size() == 2 * t - 1) {
+            BTreeNode* newRoot = new BTreeNode(t, false);
+            newRoot->children.push_back(root);
+            splitChild(newRoot, 0);
+            root = newRoot;
+        }
+        insertNonFull(root, k);
+    }
+
+    void printTree() {
+        if (root) {
+            printTreeHelper(root, 0);
+        }
+        else {
+            cout << "Tree is empty" << endl;
+        }
+    }
+
+    ~BTree() {
+        if (root) delete root;
+    }
+};
+
+int main() {
+    BTree t(2);  // t=2表示每个节点最少1个key，最多3个key
+    vector<int> keys = { 10, 20, 5, 6, 12, 30, 7, 17, 8, 25, 15 };
+
+    cout << "Inserting keys: ";
+    for (int key : keys) {
+        cout << key << " ";
+        t.insert(key);
+    }
+    cout << endl << endl;
+
+    cout << "B-Tree structure:" << endl;
+    t.printTree();
+    cout << endl;
+
+    // 测试边界值
+    cout << "Inserting edge cases..." << endl;
+    t.insert(1);  // 最小值
+    t.insert(100); // 最大值
+    t.insert(16); // 中间值
+    t.printTree();
+
+    // 搜索测试
+    vector<int> searchKeys = { 1, 6, 15, 100, 99 };
+    for (int key : searchKeys) {
+        auto result = t.search(key);
+        cout << "Search " << key << ": ";
+        if (result.first) {
+            cout << "Found at position " << result.second << endl;
+        }
+        else {
+            cout << "Not found" << endl;
+        }
+    }
+
+    return 0;
+}

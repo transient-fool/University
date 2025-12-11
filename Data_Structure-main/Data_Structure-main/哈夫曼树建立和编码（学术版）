@@ -1,0 +1,89 @@
+#include<iostream>
+#include<stack>
+#include<queue>
+#include<string>
+#include<vector>
+using namespace std;
+#define MAX_NODE 200
+typedef struct HTNode
+{
+	unsigned int Weight;
+	unsigned int Parent, Lchild, Rchild;
+}HTNode;
+//建立哈夫曼树
+void Create_Huffman(unsigned n, HTNode HT[], unsigned m)
+{
+	unsigned int w;
+	int k, j;
+	for (k = 1; k < m; k++)
+	{
+		if (k <= n)
+		{
+			cout << "请输入权值：w=?" << endl;
+			cin >> w;
+			HT[k].Weight = w;
+		}
+		else HT[k].Weight = 0;
+		HT[k].Parent = HT[k].Lchild = HT[k].Rchild = 0;
+	}//初始化向量HT
+	for (k = n + 1; k < m; k++)
+	{
+		unsigned w1 = 32767, w2 = w1;
+		int p1 = 0, p2 = 0;
+		for (j = 1; j <= k - 1; j++)
+		{
+			if (HT[j].Parent == 0)//ppt上代码全是错误。。就这一步还把j写成了h
+			{
+				if (HT[j].Weight < w1)
+				{
+					w2 = w1; p2 = p1; 
+					w1 = HT[j].Weight;
+					p1= j;
+				}else if(HT[j].Weight<w2)
+				{
+					w2 = HT[j].Weight; p2 = j;
+				}
+			}
+			
+		}
+		cout << p1 << " " << p2 << endl;
+		HT[k].Lchild = p1; HT[k].Rchild = p2;
+		HT[k].Weight = w1 + w2;
+		HT[p1].Parent = k; HT[p2].Parent = k;
+	}
+	
+}
+//哈夫曼编码实现
+vector<string> Huff_coding(unsigned n, HTNode HT[], unsigned m)
+{
+	int k,fp,p;
+	vector<string>ans;
+	string HC;
+	for (k = 1; k < n + 1; k++)
+	{
+	p = k; fp = HT[k].Parent;
+		for (; fp != 0; p = fp, fp = HT[p].Parent)
+		{
+			if (HT[fp].Lchild == p) HC+='0';//这个地方ppt也错了。。
+			else  HC+= '1';
+		}
+		
+		ans.push_back(HC);
+		HC.clear();
+		
+	}
+	return ans;
+}
+int main()
+{
+	//输入五个值：1 2 3 4 5
+	vector<string>ans;
+	HTNode* T=(HTNode*)malloc(10*sizeof(HTNode));
+	Create_Huffman(5, T, 10);
+	
+	
+	ans=Huff_coding(5, T, 10);
+	for (int i = 0; i < ans.size(); i++)
+		cout << ans[i]<<endl;
+}
+

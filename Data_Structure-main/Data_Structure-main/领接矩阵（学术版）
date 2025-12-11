@@ -1,0 +1,117 @@
+#include<iostream>
+using namespace std;
+#define INFINITY 60025 //根据权值类型，设定为最大整数或实数,这里只是随便定的不超过本代码范围
+#define MAX_VEX 30
+typedef enum {DG,AG,WDG,WAG}GraphKind;//有向图，无向图，带权，，，
+typedef char VexType;//设定节点类型
+typedef int ArcValType;//设定边的权值
+typedef ArcValType AdjType;
+typedef struct ArcType
+{
+	VexType vex1, vex2;
+	ArcValType ArcVal;
+	//ArcInfoType AArcInfo 边或者弧的其他信息，这里我就不添加了
+}ArcType;
+typedef struct
+{
+	GraphKind kind;
+	int vernum, arcnum;
+	VexType vexs[MAX_VEX];
+	AdjType adj[MAX_VEX][MAX_VEX];
+}MGraph;
+//图的创建
+MGraph* Create_Graph(MGraph* G)
+{
+	cout << "请输入图的种类" << endl;
+	int kind;
+	cin >> kind;
+	 G->kind=(GraphKind)kind;//不能直接赋值和输入enum
+	 G->vernum = 0;
+	 return G;
+}
+int LocateVex(MGraph* G, VexType vp)
+{
+	int k;
+	for (k = 0; k < G->vernum; k++)
+		if (G->vexs[k] == vp) return k;
+	return -1;//无此顶点
+}
+int AddVertex(MGraph* G, VexType vp)
+{
+	int k, j;
+	if (G->vernum >= MAX_VEX)
+	{
+    cout << "放不下更多的结点" << endl; return -1;
+	}
+	if (LocateVex(G, vp) != -1)
+	{
+    cout << "结点已经存在" << endl; return -1;
+	}	
+	k = G->vernum;
+	G->vexs[G->vernum++] = vp;
+	if (G->kind == DG || G->kind == AG)
+	{
+		for (j = 0; j < G->vernum; j++)
+			G->adj[j][k] = G->adj[k][j] = 0;//不带权值的有向图或者无向图
+	}
+	else
+	{
+		for (j = 0; j < G->vernum; j++)
+		{
+			G->adj[j][k] = G->adj[k][j]=INFINITY;  //带权值的有向图或者无向图
+		}
+	}
+	return k;
+}
+int AddArc(MGraph* G, ArcType arc)
+{
+	int k, j;
+	k = LocateVex(G, arc.vex1);
+	j = LocateVex(G, arc.vex2);
+	if (k == -1 || j == -1)
+	{
+		cout << "结点不存在" << endl;
+		return -1;
+	}
+	if (G->kind == DG || G->kind == WDG)
+	{
+		G->adj[k][j] = arc.ArcVal;  //有向图或者带权有向图
+	}
+	else {
+		G->adj[k][j] = G->adj[j][k] = arc.ArcVal;
+	}
+	return arc.ArcVal;
+
+}
+int main()
+{
+	//函数返回值我都改成了在输出中更容易看到的类型
+	MGraph *G=(MGraph*)malloc(sizeof(MGraph));
+	Create_Graph(G);
+	cout<< "结点b的位置:" << AddVertex(G, 'b') << endl;
+	cout << "结点a的位置："<<AddVertex(G, 'a') << endl;
+	cout<<"定位a的位置：" << LocateVex(G, 'a') << endl;
+
+	
+	ArcType test;
+	test.vex1 = 'a';
+	test.vex2 = 'b';
+	test.ArcVal = 3;//a->b是正方向（1->0)
+    cout<<"添加边的权值"<<AddArc(G, test)<<endl;
+
+	//无向图不管带权不带权值都是添加的数值，有向图不带权值反向是0，带权值反向是‘正无穷’
+	cout<<"有向图(enum=0)" << G->adj[0][1]<<endl;  //0
+	cout << "有向图(enum=0)" << G->adj[1][0]<<endl;   //3
+	cout << "无向图(enum=1)" << G->adj[0][1] << endl;  //3
+	cout << "无向图(enum=1)" << G->adj[1][0] << endl;  //3
+	cout << "有向图带权值(enum=2)" << G->adj[0][1] << endl;  //60025
+	cout << "有向图带权值(enum=2)" << G->adj[1][0] << endl;  //3
+	cout << "无向图带权值(enum=3)" << G->adj[0][1] << endl;  //3
+	cout << "无向图带权值(enum=3)" << G->adj[1][0] << endl;  //3
+
+
+}
+
+
+
+

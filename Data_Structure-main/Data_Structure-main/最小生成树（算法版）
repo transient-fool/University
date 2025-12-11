@@ -1,0 +1,99 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define N 10
+#define INF 10000
+using namespace std;
+struct edge { int v, w; };
+vector<edge>e[N];
+int d[N], vis[N];
+int prim(int s,int n)
+{
+	int cnt = 0,ans=0;
+	for (int i = 0; i <= n; i++) {
+		d[i] = INF; vis[i] = 0;
+	}
+	d[s] = 0;
+	for (int i = 1; i <= n; i++)
+	{
+		int u = 0;
+		for (int j = 1; j <= n; j++)
+			if (!vis[j] && d[j] < d[u])u = j;
+		vis[u] = 1;
+		ans += d[u];//保存路径
+		if (d[u] != INF)cnt++;//防止非连通图
+		for (auto ed : e[u])
+		{
+			int v = ed.v, w = ed.w;
+			if (d[v] > w) d[v] = w;
+		}
+	}
+	return ans;
+}
+
+struct edge0 {
+	int u, v, w;
+	bool operator<(const edge0& t)const { return w < t.w; }
+}e0[N];
+int fa[N];//父亲结点
+int find(int x)
+{
+	if (fa[x] == x) return x;
+	return fa[x] = find(fa[x]);
+}
+int KrusKal(int m, int n)
+{
+	sort(e0, e0 + m);
+	int ans = 0, cnt=0;
+	for (int i = 1; i <= n; i++)fa[i] = i;
+	for (int i = 0; i < m; i++)
+	{
+		int x = find(e0[i].u);
+		int y = find(e0[i].v);
+		if (x != y)
+		{
+			fa[x] = y;
+			ans += e0[i].w;
+			cnt++;//算边的数目
+		}
+	}
+	//边得数目等于结点数目减去一：return cnt==n-1
+	return ans;
+}
+
+int main()
+{
+
+/*
+5 7
+1 2 2
+1 3 1
+1 4 2
+2 3 1
+2 5 3
+3 4 3
+3 5 6
+*/
+	int n, m;
+	int a, b, c;
+	cin >> n >> m;
+	/*for (int i = 0; i < m; i++)
+	{
+		cin >> a >> b >> c;
+		e[a].push_back({ b,c });
+		e[b].push_back({ a,c });
+	}
+	cout << prim(1, 5);*/
+	for (int i = 0; i < m; i++)
+	{
+		cin >> a >> b >> c;
+		e0[i] = { a,b,c };
+		
+	}
+	cout << KrusKal(5, 7);
+
+
+
+
+
+}

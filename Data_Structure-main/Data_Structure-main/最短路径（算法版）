@@ -1,0 +1,131 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+#define N 10
+#define INF 10000
+struct edge { int v, w; };//终点，边权
+vector<edge>e[N];
+int d[N], vis[N];
+void dijkstrs(int n, int s)
+{
+	for (int i = 0; i <= n; i++) d[i] = INF;
+	d[s] = 0;
+	for (int i = 1; i < n; i++)
+	{
+		int u = 0;
+		for (int j = 1; j <= n; j++)
+			if (!vis[j] && d[j] < d[u])u = j;
+		vis[u] = 1;
+		for (auto ed : e[u])
+		{
+			int v = ed.v,w=ed.w;
+			if (d[v] > d[u] + w)
+			{
+				d[v] = d[u] + w;
+			}
+		}
+	}
+}
+int main()
+{
+	/*
+	5 7 1
+	1 3 5
+	1 4 2
+	1 5 2
+	4 2 6
+	4 3 2
+	5 3 1
+	3 2 2
+	*/
+	int n, m, s;
+	int a, b, c;
+	cin >> n >> m >> s;
+	for (int i = 0; i < m; i++)
+	{
+		cin >> a >> b >> c;
+		e[a].push_back({ b,c });
+	}
+	dijkstrs(5, 1);
+	for (int i = 1; i <= 5; i++)
+		cout <<"原点1到"<<i<<"的最短距离"<<d[i] << " "<<endl;
+}
+
+
+
+
+
+
+
+
+
+//算法二
+#include<iostream>
+using namespace std;
+#define N 10
+#define INF 10000
+int d[N][N], p[N][N];
+void Floyed(int n)
+{
+	for (int k = 1; k <= n; k++)
+		for (int i = 1; i <= n; i++)
+			for (int j = 1; j <= n; j++)
+			{
+				if (d[i][j] > d[i][k] + d[k][j])
+				{
+          d[i][j] = d[i][k] + d[k][j];
+	     p[i][j] = k;
+			}
+           
+			}
+				
+}
+void path(int i, int j)
+{
+	if (p[i][j] == 0) return;
+	int k = p[i][j];
+	path(i, k);
+	cout << k<<" ";
+	path(k, j);
+}
+
+int main()
+{
+/*	   
+6
+1 2 7
+1 4 1
+2 3 1
+3 2 6
+4 1 2
+4 3 - 1
+1 2
+*/
+
+
+	int m;
+	cin >> m;
+	int a, b,c;
+	for (int i = 1; i <= 4; i++)
+		for (int j = 1; j <= 4; j++)
+		{
+			if (i == j) d[i][j] = 0;
+			else  d[i][j] = INF;
+			p[i][j] = 0;
+		}
+		
+	for (int i = 0; i < m; i++)
+	{
+		cin >> a >> b>>c;
+		d[a][b] = c;
+	}
+
+		Floyed(4);
+		
+cout << "结点1到结点2的最短路径：" << endl;
+	cin >> a >> b;
+	cout << a << " ";
+	 path(a, b);
+	cout << b;
+
+}

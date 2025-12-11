@@ -1,0 +1,132 @@
+#include <iostream>
+using namespace std;
+#define LIST_INIT_SIZE 100
+#define LISTINCREMENT 10
+typedef struct
+{
+    int* elem;
+    int length;
+    int listsize;
+}Sqlist;
+bool INITList_Sq(Sqlist& L)
+{
+    //构造一个空线性表
+    L.elem = (int*)malloc((LIST_INIT_SIZE) * sizeof(int));
+    if (!L.elem)exit(OVERFLOW);//存储分配失败
+    L.length = 0;//空表长度为0
+    L.listsize = LIST_INIT_SIZE;//初始存储容量
+    return true;
+}
+bool ListInsert_Sq(Sqlist& L,int i,int elem)
+{
+    //在第i个位置之前插入元素，所以下标的范围是1到length+1，在这个区间内的值前面可以插入新元素
+    //要判断i值的合理性 
+    if (i<1|| i>L.length + 1) return false;//i值不合法
+    if (L.length >= L.listsize)//存储空间已满
+    {
+        int* newbase = (int*)realloc(L.elem,(L.listsize + LISTINCREMENT) * sizeof(int));
+        if (!newbase) exit(OVERFLOW);//存储分配失败
+        L.elem = newbase;              //新基地址
+        L.length += LISTINCREMENT;        //增加存储容量
+     }
+    int* q = &L.elem[i - 1];//这里选择插入位置是i-1
+    for (int* p = &L.elem[L.length - 1]; p >= q; --p)
+        *(p + 1) = *p;
+    *q = elem;
+    ++L.length;
+    return true;
+}
+bool ListDelete_Sq(Sqlist& L, int i, int& e)
+{
+    //注意这里i的合法值
+    if (i < 1 || i>L.length)return false;
+    int* p = &L.elem[i - 1];
+    e = *p;
+    int* q = L.elem + L.length - 1;
+    for (++p; p <= q; ++p)//注意这个循环的起始值
+        *(p - 1) = *p;
+    --L.length;
+    cout << "已删除第" << i << "处元素:";
+    return true;
+}
+int LocateElem_Sq(Sqlist& L, int elem, bool(*compare)(int, int))
+{
+    int i = 1;
+    int* p = L.elem;
+    while (i <= L.length && !(*compare)(*p++, elem)) ++i;
+    if (i <= L.length)
+    {
+        cout << "查找元素在第" << i << "个位置";
+        return i;
+    }
+    else {
+        cout << "未找到该元素" << endl;
+        return 0;
+    }
+}
+bool compare(int a, int b)
+{
+    if (a == b) return true;
+    else return false;
+}
+void visit(Sqlist L)
+{
+    cout << "遍历该链表：" << endl;
+    int i = 1;
+    while (i <= L.length)
+    {
+        cout << L.elem[i - 1] << endl;
+        i++;
+    }
+}
+void Merge_ListSq(Sqlist La, Sqlist Lb, Sqlist &Lc)//注意这里要传入引用，否则的话不会改变新链表Lc
+{
+    //La和Lb元素非递减排列
+    //归并生成Lc
+    int* pa = La.elem;
+    int* pb = Lb.elem;
+    Lc.length = Lc.listsize = La.length + Lb.length;
+    int* pc = Lc.elem = (int*)malloc(Lc.length * sizeof(int));
+    if (!Lc.elem) exit(OVERFLOW);
+    int* pa_last = La.elem + La.length - 1;
+    int* pb_last = Lb.elem + Lb.length - 1;
+    while(pa <= pa_last && pb <= pb_last)
+    {
+        if (*pa <= *pb)*pc++ = *pa++;
+        else *pc++ = *pb++;
+    }
+    while (pa <= pa_last) *pc++ = *pa++;
+    while (pb <= pb_last) *pc++ =*pb++;
+}
+int main()
+{
+    Sqlist ll;
+    int e;
+    //初始化链表
+    INITList_Sq(ll);
+    //插入元素
+    for (int i = 0; i < 5; i++)
+        if (ListInsert_Sq(ll, i + 1, i * 3 - 2))
+            cout << "插入成功" << endl;
+    //遍历元素
+    visit(ll);
+    //删除元素
+    ListDelete_Sq(ll, 3, e);
+    cout << e << endl;
+    //遍历元素
+    visit(ll);
+    //定位元素
+    LocateElem_Sq(ll, 3, compare);
+     
+
+    //合并两有序链表
+    Sqlist ll2, ll3;
+    INITList_Sq(ll2);
+    INITList_Sq(ll3);
+    for (int i = 0; i < 3; i++)
+        if (ListInsert_Sq(ll2, i + 1, i * 2 - 1))
+            cout << "插入成功" << endl;
+    Merge_ListSq(ll, ll2, ll3);
+    //遍历新链表
+    visit(ll3);
+}

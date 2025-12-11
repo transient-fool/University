@@ -1,0 +1,205 @@
+#include<iostream>
+#include<queue>
+using namespace std;
+#define MAX_VEX 30 /* 最大顶点数 */
+typedef char VexType;
+typedef int InfoType;
+typedef enum { DG, AG, WDG, WAG } GraphKind;
+typedef struct LinkNode
+{
+	int adjvex;                // 邻接点在头结点数组中的位置(下标)
+	InfoType info;             // 与边或弧相关的信息, 如权值
+	struct LinkNode* nextarc; // 指向下一个表结点
+}LinkNode;                    /* 表结点类型定义 */
+typedef struct VexNode
+{
+	VexType data;          // 顶点信息
+	int degree;         // 顶点的度, 有向图是入度或出度或没有(这玩意再算法中也没用到过，除了初始化的时候搞过，就留着吧）
+	LinkNode* firstarc;   // 指向第一个表结点
+}VexNode;                 /* 顶点结点类型定义 */
+typedef struct ArcType
+{
+	VexType vex1, vex2;   /* 弧或边所依附的两个顶点 */
+	InfoType info;        // 与边或弧相关的信息, 如权值
+}ArcType;                /* 弧或边的结构定义 */
+typedef struct
+{
+	GraphKind kind;      /* 图的种类标志 */
+	int vexnum;           //结点数量
+	VexNode AdjList[MAX_VEX];
+}ALGraph;                /* 图的结构定义 */
+
+//图的遍历所需要的内容
+typedef enum{FALSE,TRUE} BOOLEAN;
+BOOLEAN Visited[MAX_VEX];
+ALGraph* Create_Graph(ALGraph* G)
+{
+	cout << "请输入图的种类" << endl;
+	int kind;
+	cin >> kind;
+	G->kind = (GraphKind)kind;
+	G->vexnum = 0; /* 初始化顶点个数 */
+	return(G);
+}
+int LocateVex(ALGraph* G, VexType vp)   //顶点定位
+{
+	int k;
+	for (k = 0; k < G->vexnum; k++)
+		if (G->AdjList[k].data == vp) return(k);
+	return(-1);                /* 图中无此顶点 */
+}
+int AddVertex(ALGraph* G, VexType vp)
+{
+	int k, j;
+	if (G->vexnum >= MAX_VEX)
+	{
+		cout<<"结点太多了！"; return(-1);
+	}
+	if (LocateVex(G, vp) != -1)
+	{
+	cout<<"结点已经存在"; return(-1);
+	}
+	G->AdjList[G->vexnum].data = vp;
+	G->AdjList[G->vexnum].degree = 0;
+	G->AdjList[G->vexnum].firstarc = NULL;
+	k= ++G->vexnum;
+	return(--k);
+}
+int AddArc(ALGraph* G, ArcType arc)
+{
+	int k, j;
+	LinkNode* p, * q;
+	k = LocateVex(G, arc.vex1);
+	j = LocateVex(G, arc.vex2);
+	if (k == -1 || j == -1)
+	{
+		cout << "边的结点不存在这个图中!" << endl;
+		return(-1);
+	}
+	p = (LinkNode*)malloc(sizeof(LinkNode));
+	p->adjvex = k; p->info = arc.info;
+	p->nextarc = NULL;            /* 边的起始表结点赋值 */
+	q = (LinkNode*)malloc(sizeof(LinkNode));
+	q->adjvex = j; q->info = arc.info;
+	q->nextarc = NULL;            /* 边的末尾表结点赋值 */
+	if (G->kind == AG || G->kind == WAG)
+	{
+		q->nextarc = G->AdjList[k].firstarc;
+		G->AdjList[k].firstarc = q;
+		p->nextarc = G->AdjList[j].firstarc;
+		G->AdjList[j].firstarc = p;
+	}          /* 是无向图, 用头插入法插入到两个单链表 */
+	else          /* 建立有向图的邻接链表, 用头插入法 */
+	{
+		q->nextarc = G->AdjList[k].firstarc;
+		G->AdjList[k].firstarc = q; /* 建立正邻接链表用 */
+		//q->nextarc=G->adjlist[j].firstarc ;
+		//G->adjlist[j].firstarc=q ; /* 建立逆邻接链表用 */
+	}
+	return(1);
+}
+
+
+//图的深度优先遍历
+void DFS(ALGraph* G, int v)
+{
+	LinkNode* p;
+	Visited[v] = TRUE;
+	cout<<G->AdjList[v].data;
+	p = G->AdjList[v].firstarc;
+	while (p != NULL)
+	{
+		if (!Visited[p->adjvex]) DFS(G, p->adjvex);
+		p = p->nextarc;
+	}
+}
+void DFS_traverse_Grapg(ALGraph *G)
+{
+	int v;
+	LinkNode* p;
+	for (v = 0; v < G->vexnum; v++)
+		Visited[v] = FALSE;
+	p = G->AdjList[v].firstarc;
+	for (v = 0; v < G->vexnum; v++)
+		if (!Visited[v]) DFS(G, v);
+}
+
+//图的广度优先搜索
+/*
+
+
+*/
+void BFS_traverse_Grapg(ALGraph* G)
+{
+	int k, v, w;
+	LinkNode* p;
+	queue<int>que;
+	for (k = 0; k < G->vexnum; k++)
+		Visited[k] = FALSE;  //访问初始化
+	for (k = 0; k < G->vexnum; k++)
+	{
+		
+	  if(!Visited[k])
+		que.push(k);
+		
+		while (!que.empty())
+		{
+			w = que.front();
+			que.pop();
+			Visited[w] = TRUE;
+		    cout << G->AdjList[w].data<<" ";
+			p = G->AdjList[w].firstarc;
+			while (p != NULL)
+			{
+				if (!Visited[p->adjvex])
+				{
+                 que.push(p->adjvex);
+				 Visited[p->adjvex] = TRUE;     
+				 /*这里是我后添加的，按照我建立的无向图，a出队列的时候b c入队列，接着访问c入队列,b d入队列。
+				 b入队列两次了。所以会访问两次，所以我在这里只要加入过队列就不能呢再次加入了。不过我的测试案例太少了
+				 也不一定就是对的宽度优先搜索。破ppt上的算法错误太多了，根本不会改*/
+				}
+					
+				p = p->nextarc;
+			}
+		}
+	}
+}
+
+
+int main()
+{
+	ALGraph* G=(ALGraph*)malloc(sizeof(ALGraph));
+	Create_Graph(G);
+
+	
+	cout << "插入的a的位置"<<AddVertex(G, 'a') << endl;
+	cout << "插入的b的位置"<<AddVertex(G, 'b') << endl; 
+	cout << "插入的c的位置"<<AddVertex(G, 'c') << endl;
+	cout << "插入的d的位置" <<AddVertex(G, 'd') << endl;
+cout << "定位a的位置" << LocateVex(G, 'a') << endl;
+	cout << "定位b的位置" << LocateVex(G, 'b') << endl;
+	cout << "定位c的位置" << LocateVex(G, 'c') << endl;
+	cout << "定位c的位置" << LocateVex(G, 'd') << endl;
+	ArcType test0, test1, test2,test3;
+	test0.info = 3; test1.info = 4; test2.info = 5; test3.info = 7;
+	test0.vex1 = 'a'; test1.vex1 = 'b'; test2.vex1 = 'a'; test3.vex1 = 'c';
+	test0.vex2 = 'b'; test1.vex2 = 'c'; test2.vex2 = 'c'; test3.vex2 = 'd';
+	AddArc(G, test0);
+	AddArc(G, test1);
+	AddArc(G, test2);
+	AddArc(G, test3);
+	
+	
+	cout << "深度优先搜索：" << endl; DFS_traverse_Grapg(G);
+	cout << endl;
+	cout << "广度优先搜索：" << endl; BFS_traverse_Grapg(G);
+	/*这里在测试时候按照有向图会报错，因为d的位置是3，但是没有下一个结点，所以这样访问会访问空结点，但是无向图不会
+	for(int i=0;i<4;i++)
+		cout << G->AdjList[i].firstarc->adjvex << endl;
+	*/
+
+	
+}
+
+

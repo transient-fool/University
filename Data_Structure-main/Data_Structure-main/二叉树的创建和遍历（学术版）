@@ -1,0 +1,281 @@
+#include<iostream>
+#include<stack>
+#include<queue>
+using namespace std;
+#define MAX_NODE 50
+#define MULLKY '?'
+typedef char ElemType;
+typedef struct BTNode
+{
+	ElemType data;
+	struct BTNode* Lchild, * Rchild;
+}BTNode;
+//通过满二叉树方式建立
+BTNode* Create_BTree(void)
+{
+	BTNode* T=NULL, * p, * s[MAX_NODE];
+	char ch=' ';
+	int i, j;
+	while(1)
+	{
+		cin >> i;
+		if (i == 0) break;
+		else {
+			p = (BTNode*)malloc(sizeof(BTNode));
+			p->data = ch;
+			p->Lchild = p->Rchild = NULL;
+			s[i] = p;
+			if (i == 1)T == p;
+			else {
+				j = i / 2;
+				if (i % 2 == 0) s[j]->Lchild = p;
+				else s[j]->Rchild = p;
+			}
+
+		}
+	}
+	return T;
+}
+//通过先序遍历方式建立
+BTNode* Preorder_Create_BTree(BTNode*)
+{
+	BTNode* T;
+	char ch;
+	cin >> ch;
+	if (ch == MULLKY)
+	{
+		T = NULL;
+		return T;
+	}
+	else {
+		T = (BTNode*)malloc(sizeof(BTNode));
+		T->data = ch;
+		
+		T->Lchild=Preorder_Create_BTree(T->Lchild);
+		T->Rchild=Preorder_Create_BTree(T->Rchild);
+		return T;
+	}
+}
+//先序遍历递归写法
+void PreorderTraverse(BTNode* T)
+{
+	if (T != NULL)//cout << "二叉树为空" << endl; else... 因为在先序建树的时候很多节点都被设置为了NULL，要是加上这个就会反复加上这句话
+	
+	{
+		cout << T->data;
+		PreorderTraverse(T->Lchild);
+		PreorderTraverse(T->Rchild);
+	}
+}
+//先序遍历非递归写法
+void PreorderTraverse_Stack(BTNode* T)
+{
+	BTNode* p = T,*q;
+	stack<BTNode*> stk;
+	if (T == NULL)
+		cout << "二叉树为空" << endl;
+	else {
+		do {
+			cout << p->data;
+			q = p->Rchild;
+			if (q != NULL)
+				stk.push(q);
+			p = p->Lchild;
+			if (p == NULL&&!stk.empty()) { p = stk.top(); stk.pop(); }
+		} while (p != NULL);
+	}
+}
+//中序遍历递归写法
+void InorderTraverse(BTNode* T)
+{
+	if (T != NULL)
+	{
+		InorderTraverse(T->Lchild);
+		cout << T->data;
+		InorderTraverse(T->Rchild);
+	}
+}
+//中序遍历非递归写法
+void InorderTraverse_Stack(BTNode* T)
+{
+	BTNode* p = T;
+	stack<BTNode*>stk;
+	int etm = 1;
+	if (T == NULL) cout << "树为空" << endl;
+	else {
+		do {
+			while(p!=NULL)
+			{
+				stk.push(p); p = p->Lchild;
+			}
+			if (!stk.empty()) etm = 0;//又忘记栈的用法了
+			else {
+				p = stk.top();
+				stk.pop();
+				cout << p->data;
+				p = p->Rchild;
+			}
+		} while (etm != 0);
+	}
+}
+//后序遍历递归
+void PostorderTraverse(BTNode* T)
+{
+	if (T != NULL)
+	{
+		PostorderTraverse(T->Lchild);
+		PostorderTraverse(T->Rchild);
+		cout << T->data;
+	}
+}
+//后序遍历非递归
+void PosterTraverse(BTNode* T)
+{
+	BTNode* p = T;
+	stack<BTNode*>S1;
+	stack<int>S2;
+	int  bol = 1;
+	if (T == NULL) cout << "二叉树为空" << endl;
+	else {
+		do {
+			while(p!=NULL)
+			{
+				S1.push(p);
+				S2.push(0);
+				p = p->Lchild;
+			}
+			if (S2.empty())bol = 0;//所有节点结束了要退出循环
+			else if (S2.top() == 0)
+			{
+				p = S1.top()->Rchild;
+				S2.pop();
+				S2.push(1);
+			}
+			else {
+				p = S1.top(); S1.pop(); S2.pop();
+				cout << p->data;
+				p = NULL;//这样做是为了安全吗
+			}
+		} while (bol != 0);
+	}
+}
+//层次遍历
+void LevelorderTraverse(BTNode* T)
+{
+	if (T == NULL) cout << "二叉树为空" << endl;
+	queue<BTNode*>que;
+	BTNode* p = T;
+	if (p != NULL)
+	{
+		que.push(p);
+		while (!que.empty())
+		{
+			p = que.front();
+			que.pop();			
+			cout << p->data;
+			if (p->Lchild != NULL)
+				que.push(p->Lchild);
+			if (p->Rchild != NULL)
+				que.push(p->Rchild);
+		}
+	}
+}
+//求二叉树的叶子节点数(就是遍历树，我层次遍历也能出答案，这个遍历说是先序遍历，，）
+int search_leaves(BTNode* T)
+{
+	stack<BTNode*>stk;
+	BTNode* p = T;
+	int num = 0;
+	if (T != NULL)
+	{
+		stk.push(p);
+		while (!stk.empty())
+		{
+			p = stk.top();
+			stk.pop();
+			if (p->Lchild == NULL && p->Rchild == NULL) num++;
+			if (p->Lchild != NULL)
+				stk.push(p->Lchild);
+			if (p->Rchild != NULL)
+				stk.push(p->Rchild);
+		}
+	}
+	return num;
+}
+//求二叉树的深度
+int search_depth(BTNode* T)
+{
+	BTNode* p = T;
+	queue<BTNode*>que;
+	int front=0,rear=0,depth=0,level=0;//这四个变量要是手动模拟队列不会有那么多问题
+	if (T != NULL)
+	{
+		que.push(p);
+		rear++;
+		level = rear;
+		while (!que.empty())
+		{
+			p = que.front();
+			front++;
+			que.pop();
+			if (p->Lchild != NULL)
+			{
+            que.push(p->Lchild);
+			rear++;
+			}
+			if (p->Rchild != NULL)
+			{
+				que.push(p->Rchild);
+				rear++;
+			}
+			if (front == level) { depth++; level = rear; }
+			
+		}
+	}
+	return depth;
+}
+//下面是手动模拟队列，比我写的方便许多
+/*int search_depth(BTNode* T)
+{
+	BTNode* Stack[MAX_NODE], * p = T;
+	int front = 0, rear = 0, depth = 0, level;
+	 level总是指向访问层的最后一个结点在队列的位置 
+	if (T != NULL)
+	{
+		Queue[++rear] = p; // 根结点入队 
+		level = rear; // 根是第1层的最后一个节点
+		while (front < rear)
+		{
+			p = Queue[++front];
+			if (p->Lchild != NULL)
+				Queue[++rear] = p;  //左结点入队 
+			if (p->Rchild != NULL)
+				Queue[++rear] = p; //左结点入队 
+			if (front == level)
+				 正访问的是当前层的最后一个结点 
+			{
+				depth++; level = rear;
+			}
+		}
+	}
+}
+*/
+int main()
+{
+	//测试案例abc ? ? de ? ? f ? ? ?
+	BTNode* T=NULL;
+	cout << "先序遍历建树：";
+	T=Preorder_Create_BTree(T);
+	/*cout << "先序遍历(递归）："; PreorderTraverse(T); cout << endl;
+	cout << "先序遍历（非递归）"; PreorderTraverse_Stack(T); cout << endl;
+	cout << "中序遍历（递归）："; InorderTraverse(T); cout << endl;
+	cout << "中序遍历（非递归）："; InorderTraverse(T); cout << endl;
+	cout << "后序遍历（递归）："; PostorderTraverse(T); cout << endl;
+	cout << "后序遍历（非递归）："; PosterTraverse(T); cout << endl;
+	cout << "层次遍历："; LevelorderTraverse(T); cout << endl;*/
+	cout << "查找叶子的数量："; cout << search_leaves(T); cout << endl;
+	cout << "求二叉树的深度："; cout << search_depth(T); cout << endl;
+}
+
+
+
